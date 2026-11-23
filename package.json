@@ -1,0 +1,18 @@
+{
+  "name": "sncb-reclamation",
+  "version": "1.0.0",
+  "description": "Envoie en un clic une demande de compensation pour retard via le formulaire du profil SNCB.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/server.js",
+    "reclamer": "node --env-file-if-exists=.env src/cli.js",
+    "mock": "node test/mock-sncb.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": { "node": ">=22" },
+  "dependencies": {
+    "express": "^4.21.2",
+    "playwright": "^1.49.0"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "_info": "URLs et repères du site SNCB. Si SNCB modifie son site, ajustez ces valeurs sans toucher au code. Chaque champ est cherché par libellé (label), puis placeholder, puis attribut name/id.",
+  "loginUrl": "https://www.belgiantrain.be/fr/my-sncb",
+  "compensationUrl": "https://www.belgiantrain.be/fr/support/customer-service/compensation",
+  "cookieButton": ["#onetrust-accept-btn-handler", "button:has-text('Accepter')", "button:has-text('Tout accepter')"],
+  "login": {
+    "email": ["e-?mail", "adresse e-?mail", "identifiant", "username"],
+    "password": ["mot de passe", "password", "wachtwoord"],
+    "submit": ["se connecter", "connexion", "log ?in", "aanmelden"]
+  },
+  "champs": {
+    "dateVoyage": { "type": "date", "motsCles": ["date du voyage", "date", "datum"] },
+    "numeroTrain": { "type": "text", "motsCles": ["num[ée]ro (du )?train", "train", "treinnummer"] },
+    "gareDepart": { "type": "text", "motsCles": ["gare de d[ée]part", "d[ée]part", "vertrek"] },
+    "gareArrivee": { "type": "text", "motsCles": ["gare d'arriv[ée]e", "arriv[ée]e", "bestemming|aankomst"] },
+    "heurePrevue": { "type": "text", "motsCles": ["heure (d'arriv[ée]e )?pr[ée]vue", "heure", "uur"] },
+    "retardMinutes": { "type": "text", "motsCles": ["retard", "minutes", "vertraging"] },
+    "typeTitre": { "type": "select", "motsCles": ["type de titre", "titre de transport", "vervoerbewijs"] },
+    "numeroTitre": { "type": "text", "motsCles": ["num[ée]ro (du |de )?(titre|billet|abonnement)", "nummer"] },
+    "titulaire": { "type": "text", "motsCles": ["titulaire", "nom du titulaire", "rekeninghouder"] },
+    "iban": { "type": "text", "motsCles": ["iban"] },
+    "bic": { "type": "text", "motsCles": ["bic"] },
+    "commentaire": { "type": "textarea", "motsCles": ["commentaire", "remarque", "message", "opmerking"] },
+    "justificatif": { "type": "file", "motsCles": ["justificatif", "pi[èe]ce jointe", "document", "bijlage"] }
+  },
+  "consentement": ["j'accepte", "je certifie", "je d[ée]clare", "akkoord"],
+  "submit": ["envoyer", "soumettre", "valider", "verzenden"],
+  "confirmation": ["merci", "bien (été )?re[çc]u", "confirmation", "enregistr[ée]e", "bedankt"],
+  "referenceRegex": "(?:r[ée]f[ée]rence|dossier|num[ée]ro)\\s*[:#]?\\s*([A-Z0-9-]{5,})"
+}

@@ -1,0 +1,15 @@
+{
+  "titulaire": "Prénom Nom",
+  "iban": "BE68 5390 0754 7034",
+  "bic": "GKCCBEBB",
+  "typeTitre": "Abonnement",
+  "numeroTitre": "123456789",
+  "retardParDefaut": 60,
+  "trajetHabituel": {
+    "numeroTrain": "IC 1234",
+    "gareDepart": "Liège-Guillemins",
+    "gareArrivee": "Bruxelles-Central",
+    "heurePrevue": "08:12"
+  },
+  "commentaire": "Retard constaté à l'arrivée."
+}

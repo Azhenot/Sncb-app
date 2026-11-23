@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Réclamation SNCB</title>
+<style>
+  :root { --bleu:#003d7a; --bleu2:#0069b4; --fond:#f4f6f9; --carte:#fff; --texte:#1c2430; --gris:#5f6b7a; --ok:#1f7a3d; --ko:#b3261e; --warn:#8a5a00; --bord:#dfe4ea; }
+  @media (prefers-color-scheme: dark) { :root { --fond:#11161d; --carte:#1a212b; --texte:#e7ecf2; --gris:#9aa6b4; --bord:#2c3542; --bleu2:#4c9be8; } }
+  * { box-sizing:border-box; }
+  body { margin:0; font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:var(--fond); color:var(--texte); }
+  header { background:var(--bleu); color:#fff; padding:16px; }
+  header h1 { margin:0 auto; max-width:640px; font-size:1.2rem; }
+  main { max-width:640px; margin:0 auto; padding:16px; }
+  .carte { background:var(--carte); border:1px solid var(--bord); border-radius:12px; padding:16px; margin-bottom:16px; }
+  .trajet { font-size:1.05rem; }
+  .trajet b { display:block; font-size:1.25rem; }
+  .muted { color:var(--gris); font-size:.9rem; }
+  #go { width:100%; padding:22px; font-size:1.3rem; font-weight:700; border:0; border-radius:12px; background:var(--bleu2); color:#fff; cursor:pointer; }
+  #go:disabled { opacity:.6; cursor:wait; }
+  .ligne { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
+  .ligne label { flex:1 1 140px; }
+  label { display:block; font-size:.85rem; color:var(--gris); }
+  input, select, textarea { width:100%; padding:8px 10px; font:inherit; border:1px solid var(--bord); border-radius:8px; background:var(--fond); color:var(--texte); }
+  details summary { cursor:pointer; color:var(--bleu2); font-weight:600; }
+  .chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .chips button { padding:8px 14px; border-radius:999px; border:1px solid var(--bord); background:var(--fond); color:var(--texte); font:inherit; cursor:pointer; }
+  .chips button.actif { background:var(--bleu2); color:#fff; border-color:var(--bleu2); }
+  #statut { white-space:pre-line; }
+  .ok { color:var(--ok); } .ko { color:var(--ko); } .warn { color:var(--warn); }
+  ul.hist { list-style:none; padding:0; margin:0; }
+  ul.hist li { padding:8px 0; border-top:1px solid var(--bord); font-size:.92rem; }
+  .btn2 { padding:8px 14px; border-radius:8px; border:1px solid var(--bord); background:var(--fond); color:var(--texte); font:inherit; cursor:pointer; }
+  a { color:var(--bleu2); }
+</style>
+</head>
+<body>
+<header><h1>🚆 Réclamation retard SNCB — en un clic</h1></header>
+<main>
+  <div class="carte trajet" id="resume">Chargement…</div>
+
+  <div class="carte">
+    <label>Retard à l’arrivée</label>
+    <div class="chips" id="chips"></div>
+    <div class="ligne">
+      <label>Date du voyage<input type="date" id="dateVoyage"></label>
+      <label>Retard (min)<input type="number" id="retardMinutes" min="1"></label>
+    </div>
+    <details style="margin-top:12px">
+      <summary>Autre train aujourd’hui ?</summary>
+      <div class="ligne">
+        <label>N° de train<input id="numeroTrain"></label>
+        <label>Heure prévue<input id="heurePrevue" placeholder="08:12"></label>
+      </div>
+      <div class="ligne">
+        <label>Gare de départ<input id="gareDepart"></label>
+        <label>Gare d’arrivée<input id="gareArrivee"></label>
+      </div>
+      <div class="ligne"><label>Commentaire<textarea id="commentaire" rows="2"></textarea></label></div>
+    </details>
+    <label style="display:flex;gap:8px;align-items:center;margin-top:12px;font-size:.95rem;color:var(--texte)">
+      <input type="checkbox" id="dryRun" style="width:auto"> Mode test (remplir le formulaire sans l’envoyer)
+    </label>
+  </div>
+
+  <button id="go">Envoyer ma réclamation</button>
+  <div class="carte" id="sortie" style="margin-top:16px;display:none"><div id="statut"></div><div id="captures"></div></div>
+
+  <details class="carte">
+    <summary>Mon profil (trajet habituel, IBAN)</summary>
+    <form id="profil">
+      <div class="ligne"><label>Titulaire<input name="titulaire"></label><label>IBAN<input name="iban"></label></div>
+      <div class="ligne"><label>BIC<input name="bic"></label><label>Retard par défaut (min)<input name="retardParDefaut" type="number"></label></div>
+      <div class="ligne">
+        <label>Type de titre<select name="typeTitre"><option>Abonnement</option><option>Billet</option><option>Carte multi-voyages</option></select></label>
+        <label>N° du titre<input name="numeroTitre"></label>
+      </div>
+      <div class="ligne"><label>Train habituel<input name="t.numeroTrain"></label><label>Heure prévue<input name="t.heurePrevue"></label></div>
+      <div class="ligne"><label>Départ<input name="t.gareDepart"></label><label>Arrivée<input name="t.gareArrivee"></label></div>
+      <div class="ligne"><label>Commentaire par défaut<textarea name="commentaire" rows="2"></textarea></label></div>
+      <div class="ligne"><button class="btn2" type="submit">Enregistrer le profil</button><span id="profilOk" class="muted"></span></div>
+    </form>
+  </details>
+
+  <div class="carte"><b>Historique</b><ul class="hist" id="hist"></ul></div>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+let profil = {};
+const today = () => new Date().toLocaleDateString('sv-SE');
+
+function esc(s) { return String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
+
+async function charger() {
+  profil = await (await fetch('/api/profil')).json();
+  const t = profil.trajetHabituel || {};
+  $('resume').innerHTML = `<span class="muted">Trajet habituel</span>
+    <b>${esc(t.gareDepart)} → ${esc(t.gareArrivee)}</b>
+    Train ${esc(t.numeroTrain)} · arrivée prévue ${esc(t.heurePrevue)}
+    ${profil.identifiantsConfigures ? '' : '<div class="ko" style="margin-top:8px">⚠ Identifiants SNCB absents : renseignez SNCB_EMAIL et SNCB_PASSWORD dans le fichier .env.</div>'}`;
+  $('dateVoyage').value = today();
+  $('retardMinutes').value = profil.retardParDefaut ?? 60;
+  const f = $('profil');
+  for (const el of f.elements) {
+    if (!el.name) continue;
+    el.value = el.name.startsWith('t.') ? (t[el.name.slice(2)] ?? '') : (profil[el.name] ?? '');
+  }
+  chips();
+  historique();
+}
+
+function chips() {
+  const c = $('chips'); c.innerHTML = '';
+  for (const m of [15, 30, 60, 90, 120, 180]) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = m >= 60 ? `${m / 60 % 1 ? (m / 60).toFixed(1) : m / 60} h` : `${m} min`;
+    if (Number($('retardMinutes').value) === m) b.classList.add('actif');
+    b.onclick = () => { $('retardMinutes').value = m; chips(); };
+    c.appendChild(b);
+  }
+}
+$('retardMinutes').oninput = chips;
+
+async function historique() {
+  const h = await (await fetch('/api/historique')).json();
+  const lib = { envoyee:'✅ envoyée', test:'🧪 test', incertain:'❔ à vérifier', erreur:'❌ erreur' };
+  $('hist').innerHTML = h.length ? h.map((x) => `<li>${lib[x.statut] || x.statut} · ${esc(x.reclamation?.dateVoyage)} · train ${esc(x.reclamation?.numeroTrain)} · ${esc(x.reclamation?.retardMinutes)} min
+    ${x.reference ? ` · réf. <b>${esc(x.reference)}</b>` : ''}${x.erreur ? `<div class="ko">${esc(x.erreur)}</div>` : ''}</li>`).join('')
+    : '<li class="muted">Aucune réclamation pour l’instant.</li>';
+}
+
+async function envoyer(forcer = false) {
+  const corps = { forcer, dryRun: $('dryRun').checked };
+  for (const k of ['dateVoyage','retardMinutes','numeroTrain','heurePrevue','gareDepart','gareArrivee','commentaire']) {
+    if ($(k).value) corps[k] = $(k).value;
+  }
+  $('go').disabled = true; $('go').textContent = 'Envoi en cours… (≈30 s)';
+  $('sortie').style.display = 'block'; $('statut').textContent = 'Connexion au profil SNCB…'; $('captures').innerHTML = '';
+  try {
+    const r = await fetch('/api/reclamer', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(corps) });
+    const d = await r.json();
+    if (d.doublon && confirm(d.erreur + '\nEnvoyer quand même ?')) return envoyer(true);
+    const cls = { envoyee:'ok', test:'ok', incertain:'warn' }[d.statut] || 'ko';
+    const titre = { envoyee:'✅ Réclamation envoyée', test:'🧪 Test réussi : formulaire rempli, rien n’a été envoyé', incertain:'❔ Envoyée, mais confirmation non détectée' }[d.statut] || `❌ ${d.erreur || 'Échec'}`;
+    $('statut').innerHTML = `<b class="${cls}">${esc(titre)}</b>${d.reference ? `<div>Référence : <b>${esc(d.reference)}</b></div>` : ''}`
+      + (d.avertissements || []).map((w) => `<div class="warn">⚠ ${esc(w)}</div>`).join('')
+      + (d.champsIntrouvables?.length ? `<div class="warn">Champs non trouvés : ${esc(d.champsIntrouvables.join(', '))}</div>` : '')
+      + (d.etapes ? `<details><summary>Détails</summary><div class="muted">${d.etapes.map(esc).join('<br>')}</div></details>` : '');
+    $('captures').innerHTML = (d.captures || []).map((c) => `<a href="/${esc(c)}" target="_blank">Voir la capture ${esc(c.split('/').pop())}</a>`).join('<br>');
+  } catch (e) {
+    $('statut').innerHTML = `<b class="ko">❌ ${esc(e.message)}</b>`;
+  } finally {
+    $('go').disabled = false; $('go').textContent = 'Envoyer ma réclamation';
+    historique();
+  }
+}
+$('go').onclick = () => envoyer();
+
+$('profil').onsubmit = async (e) => {
+  e.preventDefault();
+  const p = { ...profil, trajetHabituel: { ...(profil.trajetHabituel || {}) } };
+  for (const el of e.target.elements) {
+    if (!el.name) continue;
+    if (el.name.startsWith('t.')) p.trajetHabituel[el.name.slice(2)] = el.value;
+    else p[el.name] = el.name === 'retardParDefaut' ? Number(el.value) : el.value;
+  }
+  await fetch('/api/profil', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(p) });
+  $('profilOk').textContent = 'Profil enregistré ✓';
+  charger();
+};
+charger();
+</script>
+</body>
+</html>
